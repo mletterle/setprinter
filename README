@@ -1,0 +1,54 @@
+Name
+
+	setprinter - configure and load default printers for users
+	
+Synopsis
+	setprinter [-hvgcli]
+	
+Description
+
+This Program was designed to make loading a default printer on a per user basis easier then using the registry hacks described by Microsoft
+in Knowledge Base article 196732 (link:  http://support.microsoft.com/default.aspx?scid=kb;en-us;196732).  The command line options are straight
+forward has the don't require any arguments.
+
+Options
+
+	-h:  Displays Help
+	
+	-v:  Displays Version
+	
+	-g:  Generate key files (this program basically makes key file obsolete, but they were used to imlement the solution outlined in the Microsoft
+		 knowledge base article above)
+		 
+	-c:  Configure default printers for users
+	
+	-l:  Load the configured default printer for the logged in user
+	
+	-i:  Generate an empty ini file (called setprinter.bak, if your setprinter.ini gets corrupted just copy the contents to this file under the first line
+		 and rename it to setprinter.ini)
+		 
+Version History
+V.002:  Upgrades!
+		Fixes and Additions:
+		
+		-i functions now, creates setprinter.bak to be copied to setprinter.ini ( so if the settings are still in setprinter.ini they can be recovered)
+		loads spooler settings from registry instead of from config file...no more KeyFile/Value mismatches
+		added routines so you can configure a number of users in one run instead of having to run the program again and again
+		added global default printer option
+		
+		TODO:
+		
+		Would like a better "reconfigure" technique, shouldn't have to edit the ini file by hand EVER if you don't want to.
+		
+V.001:	Inital Internal Release
+		
+		TODO:
+		
+		-i does not function yet
+		Need to have the load function pull the port from the HKCU registry rather then the file so we don't get wandering NE numbers
+		
+		
+		
+Author:
+
+	Michael Letterle <letterle@prokrams.com>
