@@ -30,7 +30,7 @@
 
 /*********************************************************************************
 **                                                                              **
-** Program:  SetPrinter V.001                                                   **
+** Program:  SetPrinter V.002                                                   **
 **                                                                              **
 ** Purpose:  To make setting default printers on a per user basis in Windows NT **
 **           easier via a simple selection process rather then registry entry   **
@@ -70,7 +70,7 @@ if (argv[1][0] == '-' || argv[1][0] == '/') /* Look for the canonical switch cha
         case 'g': readregistry();keygen();exit(1); /* Generate regini key files and exit with 1, I don't know why we would even do this anymore, this program kinda makes it obsolete */
         case 'c': readregistry();configuser();exit(1); /* Let's configure a default printer */
         case 'l': LoadDefaultPrinter();exit(1); /* Let's load the default printer from the ini file into the registry */
-        case 'i': printf("This function not implemented yet");exit(1); /* Do we really need it when it's so easy to do manually? */
+        case 'i': CreateIniFile();exit(0); /* Do we really need it when it's so easy to do manually? */
         default : printf("%s\nrun %s -h for help\n",ProgVer,ProgName);exit(1); /* Hey those options don't make sense, look at the help */
         };
 
@@ -126,6 +126,8 @@ blah = 1;
         z=z+1;
         y=y+1;
     };
+    strcpy(username[y],"setprinter's Default Printer");
+    y=y+1;
     NumOfUsers=y;
     z=0;
     return 0;
@@ -206,47 +208,76 @@ int configuser()
         printf("%i:  %s\n",z+1,printer[z]);
         z=z+1;
     };
+    
     printf("Select Number Of Printer To Be Default For %s:", SelectedUsername);
     gets(inputS);
     inputI = atoi(inputS);
     inputI = inputI-1;
-    strcpy(SelectedPrinter,printer[inputI]);
-    strcat(SelectedPrinter,",");
-    strcat(SelectedPrinter,spooler[inputI]);
+    strcpy(SelectedPrinter,strtok(printer[inputI],"\n"));
+   // strcat(SelectedPrinter,",");
+   // strcat(SelectedPrinter,spooler[inputI]);
     #ifdef _DEBUG_
-    printf("\nSelected Printer,Spooler: %s\n",SelectedPrinter);
+    printf("\nSelected Printer: \"%s\"\n",SelectedPrinter);
     #endif
-        if ((fptr = fopen(inifile,"r")) == NULL)
+        if ((fptr = fopen(inifile,"r+")) == NULL)
         {
             printf("\nCannot open %s for reading, please correct and try again.\nIf file does not exist it can be created with: %s -i", inifile);
             exit(1);
         };
         fgets(iniline,sizeof(iniline),fptr); /* Read First Line of inifile */
-
+		pos = ftell(fptr);
         if ( !strcmp(iniline, INIHEADER)) /* is it a valid ini file? */
             {
-            while ( fgets(iniline,sizeof(iniline),fptr) != NULL ) /* If it's a valid ini file let's go through it line by line */
+	              z=1;
+	            while ( fgets(iniline,sizeof(iniline),fptr) != NULL ) /* If it's a valid ini file let's go through it line by line */
             {
-            tempname=strtok(iniline,"="); /* since the equal sign is our field separtor we'll look at the first token (the username) */
+            
+	        strcpy(origline,iniline);
+	        tempname=strtok(iniline,"="); /* since the equal sign is our field separtor we'll look at the first token (the username) */
             #ifdef _DEBUG_
             printf("tempname = %s\n",tempname);
             #endif
             if (!strcmpi(tempname,SelectedUsername)){ /* If the token equals the username then it must have been set up already, print a message and exit */
-                printf("User %s already has a configured printer, delete line in setprinter.ini or select another username",SelectedUsername);
-                fclose(fptr);
-                exit(1);
-                };
-            };/* Alright, user isn't previously configured, let's move on */
-            fclose(fptr);
-            if ((fptr = fopen(inifile,"a+")) == NULL){printf("\nCannot open %s for updating, please correct and try again.\n");};
+                
+            	printf("User %s already has a configured printer\nDelete line in setprinter.ini and try again\n",SelectedUsername);
+                printf("Would you like to configure another user? [y/n]:");
+        		gets(inputS);
+        		if(!strcmpi(inputS,"n")){fclose(fptr);exit(0);} else {configuser();};};
+                         
+	             
+	                
+            };
+            
+             
+            /* Alright, user isn't previously configured or we decided to reconfigure them, let's move on */
+            
+            #ifdef _DEBUG_
+            printf("Moving on\nValue of pos=%ld\n",pos);
+            #endif
+          
+            if ((fptr = fopen(inifile,"a")) == NULL){printf("\nCannot open %s for updating, please correct and try again.\n");};
+            
+            
+           
+            
+            #ifdef _DEBUG_
+           
+            printf("%s=%s\n",SelectedUsername,SelectedPrinter);
+            #endif
             fprintf(fptr,"%s=%s\n",SelectedUsername,SelectedPrinter); /* Woo hoo, write that ini file */
             fclose(fptr);
+            printf("Would you like to configure another user? [y/n]:");
+        	gets(inputS);
+        	if(!strcmpi(inputS,"n")){exit(0);} else {configuser();};
             }
+            
         else
             {/* If the ini file isn't valid (ie the Header isn't there) spit out an error message */
                 printf("%s does not appear to be a valid ini file, this can be corrected with %s -i\n", inifile, ProgName);
             };
         fclose(fptr);
+        
+        
 return 0;
 };
 
@@ -264,7 +295,8 @@ return 0;
 
 int LoadDefaultPrinter()
 {
-    strcpy(SelectedUsername,getenv("USERNAME"));/* Copy the %USERNAME% enviroment variable into the SelectedUsername variable */
+    readregistry();
+	strcpy(SelectedUsername,getenv("USERNAME"));/* Copy the %USERNAME% enviroment variable into the SelectedUsername variable */
     #ifdef _DEBUG_
     printf("Your Username: %s", SelectedUsername);
     #endif
@@ -285,12 +317,24 @@ int LoadDefaultPrinter()
                     #endif
                     if (!strcmpi(tempname,SelectedUsername))
                         {
-                        strcpy(SelectedPrinter,strtok(NULL,"="));
+                        isconfig = 1;
+	                    strcpy(SelectedPrinter,strtok(NULL,"=\n"));
                         fclose(fptr);
                         };
                         #ifdef _DEBUG_
                         printf("Configured Default Printer:%s\n",SelectedPrinter);
-                        #endif /* Look at all that registry Wizardy below, you should see me in my pointy hat */
+                        #endif 
+                        z=0;
+                        while( !strcmp(SelectedPrinter,printer[z]))
+                        {
+	                        z=z+1;
+                       };
+                       strcat(SelectedPrinter,",");
+   					   strcat(SelectedPrinter,spooler[z]);
+                       #ifdef _DEBUG_
+                       printf("Configured Default Printer,Spooler: %s\n",SelectedPrinter);
+                       #endif
+                        /* Look at all that registry Wizardy below, you should see me in my pointy hat */
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",0,KEY_ALL_ACCESS,&hKey);
                         RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
                         RegCloseKey(hKey);
@@ -299,11 +343,79 @@ int LoadDefaultPrinter()
                         RegCloseKey(hKey);
                     };
                     fclose(fptr);
+                    };
+                    if (isconfig == 0){
+	                    strcpy(SelectedUsername, "setprinter's Default Printer");
+	                    if ((fptr = fopen(inifile,"r")) == NULL) /* This was basically cut and pasted from the ConfigUser Function */
+          				  {
+                		printf("\nCannot open %s for reading, please correct and try again.\nIf file does not exist it can be created with: %s -i", inifile);
+                		exit(1);
+        				};
+	                             fgets(iniline,sizeof(iniline),fptr); /* Read First Line of inifile */
+        if ( !strcmp(iniline, INIHEADER)) /* is it a valid ini file? */
+                    {
+                    while ( fgets(iniline,sizeof(iniline),fptr) != NULL )
+                    {
+                    tempname=strtok(iniline,"=");
+                    #ifdef _DEBUG_
+                    printf("tempname = %s\n",tempname);
+                    #endif
+                    if (!strcmpi(tempname,SelectedUsername))
+                        {
+                        isconfig = 1;
+	                    strcpy(SelectedPrinter,strtok(NULL,"=\n"));
+                        fclose(fptr);
+                        };
+                        #ifdef _DEBUG_
+                        printf("Configured Default Printer:%s\n",SelectedPrinter);
+                        #endif 
+                        z=0;
+                        while( !strcmp(SelectedPrinter,printer[z]))
+                        {
+	                        z=z+1;
+                       };
+                       strcat(SelectedPrinter,",");
+   					   strcat(SelectedPrinter,spooler[z]);
+                       #ifdef _DEBUG_
+                       printf("Configured Default Printer,Spooler: %s\n",SelectedPrinter);
+                       #endif
+                        /* Look at all that registry Wizardy below, you should see me in my pointy hat */
+                        RegOpenKeyEx(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",0,KEY_ALL_ACCESS,&hKey);
+                        RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
+                        RegCloseKey(hKey);
+                        RegOpenKeyEx(HKEY_CURRENT_USER,"Printers",0,KEY_ALL_ACCESS,&hKey);
+                        RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
+                        RegCloseKey(hKey);
+                    };
                     }
                 else
                     {
                         printf("%s does not appear to be a valid ini file, this can be corrected with %s -i\n", inifile, ProgName);
                     };
-        fclose(fptr);
+        fclose(fptr);};
 return 0;
 };
+
+/****************************************************
+ *                                                  *
+ *  CreateIniFile() function	                    *
+ *                                                  *
+ *  This function works very much like the config   *
+ *  user function except that the user doesn't make *
+ *  any choices it just snarfs the username from the*
+ *  enviroment variable.                            *
+ ****************************************************/
+ 
+int CreateIniFile()
+{
+	 if((fptr = fopen("setprinter.bak","w")) == NULL)
+	 		{
+		 		printf("\nCannot open setprinter.bak for writing, you must not have permission");
+		 		exit(1);
+	 		};
+	 			fputs(INIHEADER,fptr);
+	 			fclose(fptr);
+	 			printf("\nSetPrinter.bak written copy to setprinter.ini to use\n");
+return(0);
+};
+ 				
