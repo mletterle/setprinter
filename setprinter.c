@@ -30,7 +30,7 @@
 
 /*********************************************************************************
 **                                                                              **
-** Program:  SetPrinter V.002                                                   **
+** Program:  SetPrinter V1.0                                                    **
 **                                                                              **
 ** Purpose:  To make setting default printers on a per user basis in Windows NT **
 **           easier via a simple selection process rather then registry entry   **
@@ -298,7 +298,7 @@ int LoadDefaultPrinter()
     readregistry();
 	strcpy(SelectedUsername,getenv("USERNAME"));/* Copy the %USERNAME% enviroment variable into the SelectedUsername variable */
     #ifdef _DEBUG_
-    printf("Your Username: %s", SelectedUsername);
+    printf("Your Username: %s\n", SelectedUsername);
     #endif
 
     if ((fptr = fopen(inifile,"r")) == NULL) /* This was basically cut and pasted from the ConfigUser Function */
@@ -315,31 +315,34 @@ int LoadDefaultPrinter()
                     #ifdef _DEBUG_
                     printf("tempname = %s\n",tempname);
                     #endif
+                    z=0;
                     if (!strcmpi(tempname,SelectedUsername))
                         {
                         isconfig = 1;
 	                    strcpy(SelectedPrinter,strtok(NULL,"=\n"));
-                        fclose(fptr);
-                        };
                         #ifdef _DEBUG_
                         printf("Configured Default Printer:%s\n",SelectedPrinter);
                         #endif 
-                        z=0;
-                        while( !strcmp(SelectedPrinter,printer[z]))
+	                    fclose(fptr);
+                        while( strcmpi(SelectedPrinter,printer[z]))
                         {
-	                        z=z+1;
+	                       #ifdef _DEBUG_
+	                       printf("Selected Printer: %s, Printer[%d]: %s\n",SelectedPrinter,z,printer[z]);
+	                       #endif
+	                       z=z+1;
                        };
                        strcat(SelectedPrinter,",");
    					   strcat(SelectedPrinter,spooler[z]);
                        #ifdef _DEBUG_
                        printf("Configured Default Printer,Spooler: %s\n",SelectedPrinter);
                        #endif
+                        };
                         /* Look at all that registry Wizardy below, you should see me in my pointy hat */
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",0,KEY_ALL_ACCESS,&hKey);
-                        RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
+                        RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
                         RegCloseKey(hKey);
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Printers",0,KEY_ALL_ACCESS,&hKey);
-                        RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
+                        RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
                         RegCloseKey(hKey);
                     };
                     fclose(fptr);
@@ -360,18 +363,22 @@ int LoadDefaultPrinter()
                     #ifdef _DEBUG_
                     printf("tempname = %s\n",tempname);
                     #endif
+                    z=0;
                     if (!strcmpi(tempname,SelectedUsername))
                         {
                         isconfig = 1;
 	                    strcpy(SelectedPrinter,strtok(NULL,"=\n"));
                         fclose(fptr);
-                        };
+                        
                         #ifdef _DEBUG_
                         printf("Configured Default Printer:%s\n",SelectedPrinter);
                         #endif 
-                        z=0;
-                        while( !strcmp(SelectedPrinter,printer[z]))
+                        
+                        while( strcmpi(SelectedPrinter,printer[z]))
                         {
+	                       #ifdef _DEBUG_
+	                       printf("Selected Printer: %s, Printer[%d]: %s\n",SelectedPrinter,z,printer[z]);
+	                       #endif
 	                        z=z+1;
                        };
                        strcat(SelectedPrinter,",");
@@ -379,12 +386,14 @@ int LoadDefaultPrinter()
                        #ifdef _DEBUG_
                        printf("Configured Default Printer,Spooler: %s\n",SelectedPrinter);
                        #endif
+                        };
+                        
                         /* Look at all that registry Wizardy below, you should see me in my pointy hat */
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",0,KEY_ALL_ACCESS,&hKey);
-                        RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
+                        RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
                         RegCloseKey(hKey);
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Printers",0,KEY_ALL_ACCESS,&hKey);
-                        RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)-1));
+                        RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
                         RegCloseKey(hKey);
                     };
                     }

@@ -28,6 +28,14 @@ Options
 		 and rename it to setprinter.ini)
 		 
 Version History
+
+V1.0 : Tested on TSE and it seems to work! Feel confident enough to give it a V1.0.
+
+		Fixes:
+		
+		Corrected Ne number bug where it always picked the last Ne number in the registry.
+
+		
 V.002:  Upgrades!
 		Fixes and Additions:
 		
