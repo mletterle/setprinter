@@ -9,7 +9,8 @@ Description
 
 This Program was designed to make loading a default printer on a per user basis easier then using the registry hacks described by Microsoft
 in Knowledge Base article 196732 (link:  http://support.microsoft.com/default.aspx?scid=kb;en-us;196732).  The command line options are straight
-forward has the don't require any arguments.
+forward has they don't require any arguments.
+
 
 Options
 
@@ -17,7 +18,7 @@ Options
 	
 	-v:  Displays Version
 	
-	-g:  Generate key files (this program basically makes key file obsolete, but they were used to imlement the solution outlined in the Microsoft
+	-g:  Generate key files (this program basically makes key file obsolete, but they were used to implement the solution outlined in the Microsoft
 		 knowledge base article above)
 		 
 	-c:  Configure default printers for users
@@ -27,13 +28,31 @@ Options
 	-i:  Generate an empty ini file (called setprinter.bak, if your setprinter.ini gets corrupted just copy the contents to this file under the first line
 		 and rename it to setprinter.ini)
 		 
+How To Use
+
+First run setprinter -c to configure your users.  Then you can add setprinter -l into your logon scripts to load the default printer
+on logon.  Remember setprinter looks for the ini in the current directory, you might find it easier to put everything into a set place
+and then cd to it in the script.
+		 
+ 
+		 
 Version History
+
+V1.0 Build 030312:
+		
+		Fixes:
+		
+		Doesn't blow things up when default printer is deleted or removed.  As a matter of fact it outputs a nice
+		netsend message explaining what's wrong.  If nothing is setup in setprinter.ini it now just does nothing.
+
 
 V1.0 : Tested on TSE and it seems to work! Feel confident enough to give it a V1.0.
 
 		Fixes:
 		
 		Corrected Ne number bug where it always picked the last Ne number in the registry.
+
+
 
 		
 V.002:  Upgrades!
@@ -48,7 +67,7 @@ V.002:  Upgrades!
 		
 		Would like a better "reconfigure" technique, shouldn't have to edit the ini file by hand EVER if you don't want to.
 		
-V.001:	Inital Internal Release
+V.001:	Initial Internal Release
 		
 		TODO:
 		

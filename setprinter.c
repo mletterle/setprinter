@@ -66,10 +66,10 @@ if (argv[1][0] == '-' || argv[1][0] == '/') /* Look for the canonical switch cha
         switch(argv[1][1]) /* Let's see what's after the switch character */
         {
         case 'h': printf(USAGE,ProgVer,ProgName,inifile);exit(0); /* Display Help and exit with 0 (USAGE defined in setprinter.h) */
-        case 'v': printf("%s\n",ProgVer);exit(1); /* Display Version and exit with 1 */
-        case 'g': readregistry();keygen();exit(1); /* Generate regini key files and exit with 1, I don't know why we would even do this anymore, this program kinda makes it obsolete */
-        case 'c': readregistry();configuser();exit(1); /* Let's configure a default printer */
-        case 'l': LoadDefaultPrinter();exit(1); /* Let's load the default printer from the ini file into the registry */
+        case 'v': printf("%s\n",ProgVer);exit(0); /* Display Version and exit with 0 */
+        case 'g': readregistry();keygen();exit(0); /* Generate regini key files and exit with 0, I don't know why we would even do this anymore, this program kinda makes it obsolete */
+        case 'c': readregistry();configuser();exit(0); /* Let's configure a default printer */
+        case 'l': LoadDefaultPrinter();exit(0); /* Let's load the default printer from the ini file into the registry */
         case 'i': CreateIniFile();exit(0); /* Do we really need it when it's so easy to do manually? */
         default : printf("%s\nrun %s -h for help\n",ProgVer,ProgName);exit(1); /* Hey those options don't make sense, look at the help */
         };
@@ -324,13 +324,15 @@ int LoadDefaultPrinter()
                         printf("Configured Default Printer:%s\n",SelectedPrinter);
                         #endif 
 	                    fclose(fptr);
-                        while( strcmpi(SelectedPrinter,printer[z]))
+                        while(strcmpi(SelectedPrinter,printer[z]) && z != NumOfPrinters )
                         {
 	                       #ifdef _DEBUG_
-	                       printf("Selected Printer: %s, Printer[%d]: %s\n",SelectedPrinter,z,printer[z]);
+	                       printf("First Loop Selected Printer: %s, Printer[%d]: %s\n",SelectedPrinter,z,printer[z]);
 	                       #endif
 	                       z=z+1;
+	                       
                        };
+                       if(!strcmpi(SelectedPrinter,printer[z])){isconfig = 2;};
                        strcat(SelectedPrinter,",");
    					   strcat(SelectedPrinter,spooler[z]);
                        #ifdef _DEBUG_
@@ -338,12 +340,13 @@ int LoadDefaultPrinter()
                        #endif
                         };
                         /* Look at all that registry Wizardy below, you should see me in my pointy hat */
+                        if(isconfig == 2){
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",0,KEY_ALL_ACCESS,&hKey);
                         RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
                         RegCloseKey(hKey);
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Printers",0,KEY_ALL_ACCESS,&hKey);
                         RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
-                        RegCloseKey(hKey);
+                        RegCloseKey(hKey);};
                     };
                     fclose(fptr);
                     };
@@ -374,27 +377,32 @@ int LoadDefaultPrinter()
                         printf("Configured Default Printer:%s\n",SelectedPrinter);
                         #endif 
                         
-                        while( strcmpi(SelectedPrinter,printer[z]))
+                        while( strcmpi(SelectedPrinter,printer[z]) && z != NumOfPrinters)
                         {
+	                       
 	                       #ifdef _DEBUG_
 	                       printf("Selected Printer: %s, Printer[%d]: %s\n",SelectedPrinter,z,printer[z]);
 	                       #endif
-	                        z=z+1;
+	                       
+	                       z=z+1;
+	                       
                        };
+                       if(!strcmpi(SelectedPrinter,printer[z])){isconfig = 2;};
                        strcat(SelectedPrinter,",");
    					   strcat(SelectedPrinter,spooler[z]);
                        #ifdef _DEBUG_
-                       printf("Configured Default Printer,Spooler: %s\n",SelectedPrinter);
+                       printf("Second Loop Configured Default Printer,Spooler: %s\n",SelectedPrinter);
                        #endif
                         };
                         
                         /* Look at all that registry Wizardy below, you should see me in my pointy hat */
+                        if(isconfig == 2){
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",0,KEY_ALL_ACCESS,&hKey);
                         RegSetValueEx(hKey,"Device",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
                         RegCloseKey(hKey);
                         RegOpenKeyEx(HKEY_CURRENT_USER,"Printers",0,KEY_ALL_ACCESS,&hKey);
                         RegSetValueEx(hKey,"DeviceOld",0,REG_SZ,SelectedPrinter,(strlen(SelectedPrinter)));
-                        RegCloseKey(hKey);
+                        RegCloseKey(hKey);};
                     };
                     }
                 else
@@ -402,6 +410,10 @@ int LoadDefaultPrinter()
                         printf("%s does not appear to be a valid ini file, this can be corrected with %s -i\n", inifile, ProgName);
                     };
         fclose(fptr);};
+         if(isconfig == 1){
+	                        system("net send %username% Your Default Printer has been deleted or renamed please contact your System Administrator.");
+	                        exit(1);
+                        };
 return 0;
 };
 
@@ -424,7 +436,7 @@ int CreateIniFile()
 	 		};
 	 			fputs(INIHEADER,fptr);
 	 			fclose(fptr);
-	 			printf("\nSetPrinter.bak written copy to setprinter.ini to use\n");
+	 			printf("\nSetPrinter.bak written.\nCopy to setprinter.ini to use\n");
 return(0);
 };
  				

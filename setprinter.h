@@ -37,10 +37,10 @@ configuser(void);
 LoadDefaultPrinter(void);
 CreateIniFile();
 /* Constants */
-const ProgVer = "Windows Default Printer Configurator V1.0\nBuild 030228\n\nBy Michael Letterle (c)2003";
+const ProgVer = "Windows Default Printer Configurator V1.0\nBuild 030312\n\nBy Michael Letterle (c)2003";
 const ProgName = "setprinter";
 const char *KeyFileConst = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows\n      Device = DELETE\n\nHKEY_CURRENT_USER\\Printers\n      DeviceOld = DELETE\n\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows\n      Device = \"%s,%s\"\n\nHKEY_CURRENT_USER\\Printers\n      DeviceOld = \"%s,%s\"";
-const char *USAGE = "%s\n\nUsage: %s [options] \n This program is useful for setting default printers on Windows NT 4.0 TSE and Windows 2000\n \n Options:\n \n -v: Display Version Information\n\n -h: Display this help\n\n -g: Generate Keyfiles for all Printers.\n     Key files will be in the format of <printername>.key.\n     The program will write the file in the current directory and will\n     overwrite files of the same name in that directory (this option is\n     discouraged as the program itself makes key files obsolete)\n\n -c: Configure Default Printer for a user\n\n -l: Load default printer for logged in user from %s\n\n -i: Create a new inifile (creates it in setprinter.bak)\n\n";
+const char *USAGE = "%s\n\nUsage: %s [options] \n This program is useful for setting default printers on Windows NT 4.0 TSE\n and Windows 2000\n \n Options:\n \n -v: Display Version Information\n\n -h: Display this help\n\n -g: Generate Keyfiles for all Printers.\n     Key files will be in the format of <printername>.key.\n     The program will write the file in the current directory and will\n     overwrite files of the same name in that directory (this option is\n     discouraged as the program itself makes key files obsolete)\n\n -c: Configure Default Printer for a user\n\n -l: Load default printer for logged in user from %s\n\n -i: Create a new inifile (creates it in setprinter.bak)\n\n";
 const char *inifile = "setprinter.ini";
 const char *INIHEADER = "#setprinter V1.0#\n";
 const char *SPACE = " ";
